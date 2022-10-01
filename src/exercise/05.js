@@ -2,12 +2,27 @@
 // http://localhost:3000/isolated/exercise/05.js
 
 import * as React from 'react'
-// eslint-disable-next-line no-unused-vars
 import VanillaTilt from 'vanilla-tilt'
 
 function Tilt({children}) {
   // 🐨 create a ref here with React.useRef()
+  const tiltRef = React.useRef()
+  console.log(tiltRef.current)
 
+  React.useEffect(() => {
+    const tiltNode = tiltRef.current
+    VanillaTilt.init(tiltNode, {
+      max: 25,
+      speed: 400,
+      glare: true,
+      'max-glare': 0.5,
+    })
+
+
+    return function cleanup() {
+      tiltNode.vanillaTilt.destroy();
+    }
+  }, [])
   // 🐨 add a `React.useEffect` callback here and use VanillaTilt to make your
   // div look fancy.
   // 💰 like this:
@@ -29,7 +44,7 @@ function Tilt({children}) {
 
   // 🐨 add the `ref` prop to the `tilt-root` div here:
   return (
-    <div className="tilt-root">
+    <div ref={tiltRef} className="tilt-root">
       <div className="tilt-child">{children}</div>
     </div>
   )
