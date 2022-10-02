@@ -10,6 +10,7 @@ import {PokemonForm, PokemonInfoFallback, PokemonDataView, fetchPokemon} from '.
 
 function PokemonInfo({pokemonName}) {
   // 🐨 Have state for the pokemon (null)
+  const [status, setStatus] = React.useState('idle');
   const [pokemon, setPokemon] = React.useState(null);
   const [error, setError] = React.useState(null);
 
@@ -17,19 +18,27 @@ function PokemonInfo({pokemonName}) {
     if(!pokemonName) {
       return
     }
-    setPokemon(null)
+    setStatus('pending');
     fetchPokemon(pokemonName).then(
       pokemonData => {
-      /* update all the state here */
       setPokemon(pokemonData);
+      setStatus('resolved');
     },
     error => {
-      setError(error)
+      setError(error);
+      setStatus('rejected');
     }
     )
   }, [pokemonName])
 
-  if(error) {
+
+  if(status === 'idle'){
+    return 'Submit a pokemon'
+  }
+  else if(status === 'pending') {
+    return <PokemonInfoFallback name={pokemonName} />
+  }
+  else if (status === 'rejected') {
     return(
       <div role="alert">
         There was an error: {' '}
@@ -37,26 +46,11 @@ function PokemonInfo({pokemonName}) {
       </div>
     )
   }
-  // 🐨 use React.useEffect where the callback should be called whenever the
-  // pokemon name changes.
-  // 💰 DON'T FORGET THE DEPENDENCIES ARRAY!
-  // 💰 if the pokemonName is falsy (an empty string) then don't bother making the request (exit early).
-  // 🐨 before calling `fetchPokemon`, clear the current pokemon state by setting it to null.
-  // (This is to enable the loading state when switching between different pokemon.)
-  // 💰 Use the `fetchPokemon` function to fetch a pokemon by its name:
-  //
-  // 🐨 return the following things based on the `pokemon` state and `pokemonName` prop:
-  //   1. no pokemonName: 'Submit a pokemon'
-  //   2. pokemonName but no pokemon: <PokemonInfoFallback name={pokemonName} />
-  //   3. pokemon: <PokemonDataView pokemon={pokemon} />
-
-  if (!pokemonName) {
-    return 'Submit a pokemon'
-  } else if (!pokemon) {
-    return <PokemonInfoFallback name={pokemonName} />
-  } else {
+  else if(status === 'resolved') {
     return <PokemonDataView pokemon={pokemon} />
   }
+
+  throw new Error('This should be impossible');
 }
 
 function App() {
